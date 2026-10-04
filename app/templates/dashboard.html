@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - StudyFlow{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="stats">
+  <div class="stat"><span>{{ stats.total }}</span>Total tasks</div>
+  <div class="stat"><span>{{ stats.pending }}</span>Pending</div>
+  <div class="stat"><span>{{ stats.done }}</span>Completed</div>
+  <div class="stat warn"><span>{{ stats.overdue }}</span>Overdue</div>
+  <div class="stat"><span>{{ stats.completion_rate }}%</span>Completion</div>
+  <div class="stat"><span>{{ stats.minutes_completed }}</span>Minutes studied</div>
+</div>
+
+<div class="card">
+  <h2>Focus list (top priorities)</h2>
+  {% if focus %}
+  <table>
+    <tr><th>Task</th><th>Subject</th><th>Due</th><th>Priority</th><th></th></tr>
+    {% for t in focus %}
+    <tr>
+      <td>{{ t.title }}</td>
+      <td>{{ t.subject.name if t.subject else 'General' }}</td>
+      <td class="{{ 'late' if t.is_overdue }}">{{ t.due_date or '-' }}</td>
+      <td><span class="pill {{ label(score(t))|lower }}">{{ label(score(t)) }}</span> {{ score(t) }}</td>
+      <td>
+        <form method="post" action="{{ url_for('main.toggle_task', task_id=t.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn small">Done</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>Nothing pending. <a href="{{ url_for('main.new_task') }}">Add a task</a>.</p>
+  {% endif %}
+</div>
+
+{% if stats.by_subject %}
+<div class="card">
+  <h2>Progress by subject</h2>
+  {% for name, s in stats.by_subject.items() %}
+  <div class="bar-row">
+    <span>{{ name }} ({{ s.done }}/{{ s.total }})</span>
+    <div class="bar"><div style="width: {{ (s.done / s.total * 100)|round|int }}%"></div></div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

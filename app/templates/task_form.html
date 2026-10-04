@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'New' }} task - StudyFlow{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>{{ 'Edit task' if mode == 'edit' else 'New task' }}</h1>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Title <input name="title" required maxlength="120" value="{{ task.title or '' }}"></label>
+    <label>Subject
+      <select name="subject_id">
+        <option value="">General</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}" {{ 'selected' if task.subject_id|string == s.id|string }}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Due date <input type="date" name="due_date" value="{{ task.due_date or '' }}"></label>
+    <label>Difficulty (1-5) <input type="number" name="difficulty" min="1" max="5" value="{{ task.difficulty or 3 }}"></label>
+    <label>Estimated minutes <input type="number" name="est_minutes" min="5" max="600" value="{{ task.est_minutes or 30 }}"></label>
+    <label>Notes <textarea name="notes" rows="3">{{ task.notes or '' }}</textarea></label>
+    <button class="btn">Save</button>
+    <a href="{{ url_for('main.tasks') }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

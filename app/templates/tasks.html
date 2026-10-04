@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Tasks - StudyFlow{% endblock %}
+{% block content %}
+<div class="row between"><h1>Tasks</h1><a class="btn" href="{{ url_for('main.new_task') }}">+ New task</a></div>
+<form method="get" class="row card">
+  <select name="status">
+    {% for v in ['all','pending','done'] %}
+    <option value="{{ v }}" {{ 'selected' if status == v }}>{{ v|capitalize }}</option>
+    {% endfor %}
+  </select>
+  <select name="subject">
+    <option value="">All subjects</option>
+    {% for s in subjects %}
+    <option value="{{ s.id }}" {{ 'selected' if subject_id == s.id }}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn small">Filter</button>
+</form>
+<div class="card">
+  <table>
+    <tr><th>Task</th><th>Subject</th><th>Due</th><th>Diff.</th><th>Min</th><th>Priority</th><th>Actions</th></tr>
+    {% for t in tasks %}
+    <tr class="{{ 'done' if t.done }}">
+      <td>{{ t.title }}</td>
+      <td>{{ t.subject.name if t.subject else 'General' }}</td>
+      <td class="{{ 'late' if t.is_overdue }}">{{ t.due_date or '-' }}</td>
+      <td>{{ t.difficulty }}/5</td>
+      <td>{{ t.est_minutes }}</td>
+      <td>{% if t.done %}-{% else %}<span class="pill {{ label(score(t))|lower }}">{{ label(score(t)) }}</span>{% endif %}</td>
+      <td class="actions">
+        <form method="post" action="{{ url_for('main.toggle_task', task_id=t.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn small">{{ 'Undo' if t.done else 'Done' }}</button>
+        </form>
+        <a class="btn small" href="{{ url_for('main.edit_task', task_id=t.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('main.delete_task', task_id=t.id) }}" class="inline"
+              onsubmit="return confirm('Delete this task?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn small danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7">No tasks found.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}
